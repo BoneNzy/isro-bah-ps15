@@ -1,29 +1,15 @@
-import { useEffect, useState } from "react";
-import { fetchEvents } from "../services/api";
-import type { EventItem } from "../types/api";
-import EventTable from "../components/tables/EventTable";
+import PageContainer from "../components/layout/PageContainer";
 
 const EventsPage = () => {
-  const [events, setEvents] = useState<EventItem[]>([]);
-
-  useEffect(() => {
-    fetchEvents().then(setEvents);
-  }, []);
-
   return (
-    <div className="space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">
-          Flare Event Catalogue
-        </h2>
-        <p className="mt-2 text-slate-600">
-          This page will later support filtering by date range, confidence,
-          lead time, and flare severity.
+    <PageContainer>
+      <div className="panel p-8">
+        <h2 className="text-2xl font-bold">Event Catalogue</h2>
+        <p className="mt-3 text-[var(--muted)]">
+          Rebuilding this page next in the screenshot style.
         </p>
       </div>
-
-      <EventTable events={events} />
-    </div>
+    </PageContainer>
   );
 };
 

@@ -1,6 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Sidebar from "./components/layout/Sidebar";
-import Topbar from "./components/layout/Topbar";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import AppShell from "./components/layout/AppShell";
 import DashboardPage from "./pages/DashboardPage";
 import ForecastPage from "./pages/ForecastPage";
 import NowcastPage from "./pages/NowcastPage";
@@ -10,21 +9,15 @@ import ModelPage from "./pages/ModelPage";
 function App() {
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
-        <div className="flex flex-1 flex-col">
-          <Topbar />
-          <main className="flex-1 p-6">
-            <Routes>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/forecast" element={<ForecastPage />} />
-              <Route path="/nowcast" element={<NowcastPage />} />
-              <Route path="/events" element={<EventsPage />} />
-              <Route path="/model" element={<ModelPage />} />
-            </Routes>
-          </main>
-        </div>
-      </div>
+      <AppShell>
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/forecast" element={<ForecastPage />} />
+          <Route path="/nowcast" element={<NowcastPage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/model" element={<ModelPage />} />
+        </Routes>
+      </AppShell>
     </BrowserRouter>
   );
 }

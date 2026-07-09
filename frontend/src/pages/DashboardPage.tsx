@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
-import { fetchEvents, fetchLightcurves, fetchStatus } from "../services/api";
+import PageContainer from "../components/layout/PageContainer";
+import ControlPanel from "../components/dashboard/ControlPanel";
+import AlertStrip from "../components/dashboard/AlertStrip";
+import TelemetryCard from "../components/dashboard/TelemetryCard";
+import ChartPanel from "../components/dashboard/ChartPanel";
+import {
+  fetchEvents,
+  fetchLightcurves,
+  fetchStatus,
+} from "../services/api";
 import type { EventItem, LightCurvePoint, StatusResponse } from "../types/api";
-import StatusCard from "../components/cards/StatusCard";
-import AlertBanner from "../components/cards/AlertBanner";
-import LightCurveChart from "../components/charts/LightCurveChart";
-import EventTable from "../components/tables/EventTable";
 
 const DashboardPage = () => {
   const [status, setStatus] = useState<StatusResponse | null>(null);
   const [lightcurves, setLightcurves] = useState<LightCurvePoint[]>([]);
-  const [events, setEvents] = useState<EventItem[]>([]);
+  const [, setEvents] = useState<EventItem[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -18,7 +23,6 @@ const DashboardPage = () => {
         fetchLightcurves(),
         fetchEvents(),
       ]);
-
       setStatus(statusData);
       setLightcurves(lightcurveData);
       setEvents(eventsData);
@@ -27,51 +31,81 @@ const DashboardPage = () => {
     loadData();
   }, []);
 
-  const x = lightcurves.map((d) => d.timestamp);
+  const x = lightcurves.map((d) =>
+    new Date(d.timestamp).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }),
+  );
   const softY = lightcurves.map((d) => d.solexs_flux);
   const hardY = lightcurves.map((d) => d.hel1os_flux);
 
   return (
-    <div className="space-y-6">
-      {status && (
-        <>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatusCard title="Current Solar State" value={status.state} />
-            <StatusCard
-              title="Flare Probability (15 min)"
-              value={`${Math.round(status.flare_probability_15m * 100)}%`}
+    <div className="min-h-[calc(100vh-70px)]">
+      <AlertStrip
+        message="ACTIVE FLARE DETECTED — M4.1 class event ongoing. Onset: 09:42 UTC. Peak: ~09:50 UTC."
+        rightText="09:42:17 UTC"
+      />
+
+      <div className="flex min-h-[calc(100vh-130px)]">
+        <ControlPanel />
+
+        <PageContainer>
+          <div className="space-y-5">
+            {status && (
+              <div className="grid gap-4 xl:grid-cols-4">
+                <TelemetryCard
+                  label="Solar State"
+                  value="Active Flare"
+                  badgeText="Live"
+                  badgeVariant="red"
+                  valueColorClass="text-[var(--red)]"
+                />
+                <TelemetryCard
+                  label="Flare Prob. (Next 15 min)"
+                  value="87%"
+                  badgeText="High"
+                  badgeVariant="orange"
+                  valueColorClass="text-[var(--orange)]"
+                  subtext="M-class threshold • M1.0"
+                />
+                <TelemetryCard
+                  label="Active Flare Phase"
+                  value="Impulsive"
+                  badgeText="Ongoing"
+                  badgeVariant="red"
+                  valueColorClass="text-[var(--red)]"
+                  subtext="M4.1 • onset 09:42 UTC"
+                />
+                <TelemetryCard
+                  label="Last Alert"
+                  value="09:28 UTC"
+                  badgeText="M4.1"
+                  badgeVariant="orange"
+                  subtext="Forecast alert issued • +14 min lead"
+                />
+              </div>
+            )}
+
+            <ChartPanel
+              title="SoLEXS — Soft X-ray Light Curve (1–8 Å)"
+              unit="W/m²"
+              x={x}
+              y={softY}
+              lineColor="#2458ff"
             />
-            <StatusCard title="Nowcast State" value={status.nowcast_state} />
-            <StatusCard
-              title="Latest Event"
-              value={status.latest_event.event_id}
-              subtitle={`Peak: ${status.latest_event.peak_time}`}
+
+            <ChartPanel
+              title="HEL1OS — Hard X-ray Light Curve (15–100 keV)"
+              unit="cts/s"
+              x={x}
+              y={hardY}
+              lineColor="#7a3cff"
             />
           </div>
-
-          <AlertBanner message="High flare probability in next 15 minutes. Monitor precursor activity." />
-        </>
-      )}
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <LightCurveChart
-          title="SoLEXS Soft X-ray Light Curve"
-          x={x}
-          y={softY}
-          yLabel="Soft X-ray Flux"
-          color="#2563eb"
-        />
-
-        <LightCurveChart
-          title="HEL1OS Hard X-ray Light Curve"
-          x={x}
-          y={hardY}
-          yLabel="Hard X-ray Flux"
-          color="#dc2626"
-        />
+        </PageContainer>
       </div>
-
-      <EventTable events={events} />
     </div>
   );
 };
